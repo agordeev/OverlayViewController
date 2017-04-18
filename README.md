@@ -2,7 +2,7 @@
 
 <p align="center"><img src="Images/1.gif" height="190" width="353"></p>
 
-A simple drop-in protocol encapsulating presentation and dismiss logic for child view controller. Read relevant article: [https://andreygordeev.com/2017/04/18/overlay-view-controller-protocols-swift/](https://andreygordeev.com/2017/04/18/overlay-view-controller-protocols-swift/). 
+A simple way to present your child view controller on top of another one. Read relevant article: [https://andreygordeev.com/2017/04/18/overlay-view-controller-protocols-swift/](https://andreygordeev.com/2017/04/18/overlay-view-controller-protocols-swift/). 
 
 Written on Swift.
 
