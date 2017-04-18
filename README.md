@@ -33,6 +33,10 @@ class MessageViewController: UIViewController, OverlayViewController {
 }
 ```
 
+## Installation
+
+Just drop `OverlayViewController.swift` into your project and you're all set.
+
 ## Author
 
 [Andrey Gordeev](https//andreygordeev.com)
