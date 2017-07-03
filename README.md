@@ -33,6 +33,8 @@ class MessageViewController: UIViewController, OverlayViewController {
 }
 ```
 
+On storyboard, set view controller's Storyboard ID to `MessageViewController`.
+
 ## Installation
 
 Just drop `OverlayViewController.swift` into your project and you're all set.
