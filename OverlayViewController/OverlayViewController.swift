@@ -19,7 +19,7 @@ extension OverlayHost where Self: UIViewController {
         let identifier = String(describing: T.self)
         return showOverlay(identifier: identifier, fromStoryboardWithName: storyboardName)
     }
-
+    
     @discardableResult
     func showOverlay<T: OverlayViewController>(identifier: String, fromStoryboardWithName storyboardName: String) -> T? {
         let storyboard = UIStoryboard(name: storyboardName, bundle: nil)
@@ -30,26 +30,24 @@ extension OverlayHost where Self: UIViewController {
 }
 
 protocol OverlayViewController: class {
-    var overlaySize: CGSize? { get }
+    var overlaySize: CGSize? { get set }
+    var overlayOrigin: CGPoint? { get set }
     func presentOverlay(from parentViewController: UIViewController)
     func dismissOverlay()
 }
 
 extension OverlayViewController where Self: UIViewController {
-    var overlaySize: CGSize? {
-        return nil
-    }
     /// Just a random number. We use this to access blackOverlayView later after we've added it.
     private var blackOverlayViewTag: Int {
         return 392895
     }
-
+    
     /// Presents the current view controller as an overlay on a given parent view controller.
     ///
     /// - Parameter parentViewController: The parent view controller.
     func presentOverlay(from parentViewController: UIViewController) {
         // Dim out background.
-        let parentBounds = parentViewController.view.bounds
+        let parentBounds: CGRect = parentViewController.view.bounds
         let blackOverlayView = UIView()
         blackOverlayView.backgroundColor = UIColor.black.withAlphaComponent(0.2)
         blackOverlayView.frame = parentBounds
@@ -57,38 +55,42 @@ extension OverlayViewController where Self: UIViewController {
         blackOverlayView.isUserInteractionEnabled = true
         blackOverlayView.tag = blackOverlayViewTag
         parentViewController.view.addSubview(blackOverlayView)
-
+        
         let containerView = UIView()
         if let overlaySize = overlaySize {
-            // The user has provided the overlaySize.
-            let x = (parentBounds.width - overlaySize.width) * 0.5
-            let y = (parentBounds.height - overlaySize.height) * 0.5
-            containerView.frame = CGRect(x: x, y: y, width: overlaySize.width, height: overlaySize.height)
+            if let overlayOrigin = overlayOrigin {
+                containerView.frame = CGRect(x: overlayOrigin.x, y: overlayOrigin.y, width: overlaySize.width, height: overlaySize.height)
+            } else {
+                // The user has provided the overlaySize but not the origin
+                let x = (parentBounds.width - overlaySize.width) * 0.5
+                let y = (parentBounds.height - overlaySize.height) * 0.5
+                containerView.frame = CGRect(x: x, y: y, width: overlaySize.width, height: overlaySize.height)
+            }
         } else {
             // No overlaySize provided. By default we have small paddings at every edge.
             containerView.frame = parentBounds.insetBy(dx: parentBounds.width*0.05,
                                                        dy: parentBounds.height*0.05)
         }
-
+        
         // Adding a shadow.
         containerView.layer.shadowColor = UIColor.black.cgColor
         containerView.layer.shadowRadius = 10.0
         containerView.layer.shadowOpacity = 0.4
         containerView.layer.shadowOffset = CGSize.zero
-
+        
         parentViewController.view.addSubview(containerView)
-
+        
         // Round corners.
         view.layer.cornerRadius = 8.0
         view.clipsToBounds = false
-
+        
         // Adding to the parent view controller.
         parentViewController.addChildViewController(self)
         containerView.addSubview(self.view)
         // Fit into the container view.
         constraintViewEqual(view1: containerView, view2: self.view)
         self.didMove(toParentViewController: parentViewController)
-
+        
         // Fade the overlay view in.
         containerView.alpha = 0.0
         containerView.transform = CGAffineTransform(scaleX: 0.85, y: 0.85)
@@ -98,7 +100,7 @@ extension OverlayViewController where Self: UIViewController {
             blackOverlayView.alpha = 1.0
         }
     }
-
+    
     /// Removes the current view controller from the parent view controller with animation.
     func dismissOverlay() {
         guard let containerView = view.superview else { return }
@@ -113,7 +115,7 @@ extension OverlayViewController where Self: UIViewController {
             blackOverlayView?.removeFromSuperview()
         }
     }
-
+    
     /// Sticks child view (view1) to the parent view (view2) using constraints.
     private func constraintViewEqual(view1: UIView, view2: UIView) {
         view2.translatesAutoresizingMaskIntoConstraints = false
